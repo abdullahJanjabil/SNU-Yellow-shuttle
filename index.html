@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SNU Shuttle Tracker 🚌</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #ffb703;
+      --primary-dark: #fb8500;
+      --accent: #219ebc;
+      --bg: #fdfaf6;
+      --card-bg: #ffffff;
+      --text: #2c3e50;
+      --text-muted: #7f8c8d;
+      --highlight: #2ec4b6;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Quicksand', -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 16px 16px 80px 16px;
+      display: flex;
+      justify-content: center;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+      z-index: 2;
+    }
+
+    /* Cute Header & Doodle Typography */
+    header {
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-family: 'Gaegu', cursive;
+      font-size: 2.2rem;
+      margin: 0 0 2px 0;
+      color: var(--primary-dark);
+      letter-spacing: 1px;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    /* Interactive Action Button */
+    button {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      border: none;
+      border-radius: 20px;
+      padding: 12px 20px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      font-family: 'Gaegu', cursive;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      width: 100%;
+      box-shadow: 0 4px 10px rgba(251, 133, 0, 0.25);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    #status {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    /* Bus Cards */
+    .stop-card {
+      background: var(--card-bg);
+      border-radius: 18px;
+      padding: 16px;
+      margin-top: 14px;
+      border: 2px dashed #f0e6d2;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      transition: all 0.2s ease;
+    }
+
+    .stop-card.nearest {
+      border: 2.5px solid var(--primary-dark);
+      background: #fffdfa;
+      box-shadow: 0 6px 16px rgba(251, 133, 0, 0.15);
+    }
+
+    .badge {
+      display: inline-block;
+      background: var(--primary-dark);
+      color: white;
+      font-family: 'Gaegu', cursive;
+      font-size: 0.95rem;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 12px;
+      margin-bottom: 6px;
+    }
+
+    .stop-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .stop-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #1a252f;
+    }
+
+    .distance {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .schedule-list {
+      margin-top: 10px;
+      border-top: 1px dashed #f0e6d2;
+      padding-top: 10px;
+    }
+
+    .bus-time {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.95rem;
+      margin-bottom: 6px;
+    }
+
+    .countdown {
+      font-weight: 700;
+      color: var(--highlight);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Background Doodle Animations */
+    .sky-scene {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100px;
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+      border-top: 2px dashed #e8dcc4;
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    .road {
+      position: absolute;
+      bottom: 12px;
+      width: 100%;
+      height: 2px;
+      background: #d5c7ad;
+    }
+
+    /* Cute Yellow Bus Animation */
+    .bus-wrapper {
+      position: absolute;
+      bottom: 14px;
+      animation: driveBus 14s linear infinite;
+    }
+
+    .cute-bus {
+      font-size: 2.2rem;
+      transform: scaleX(-1); /* Points bus forward */
+      display: inline-block;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+    }
+
+    /* Animated Doodles: Birds & Cloud */
+    .bird {
+      position: absolute;
+      font-size: 1.2rem;
+      opacity: 0.6;
+      animation: flyBird 18s linear infinite;
+    }
+
+    .bird-1 { top: 15px; animation-delay: 0s; }
+    .bird-2 { top: 35px; animation-delay: 9s; }
+
+    @keyframes driveBus {
+      0% { left: -60px; }
+      100% { left: 105%; }
+    }
+
+    @keyframes flyBird {
+      0% { left: 105%; }
+      100% { left: -40px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>✨ SNU Little Shuttle Tracker 🚌</h1>
+    <div class="subtitle">Next departures with live second count ⏱️</div>
+    <button onclick="getUserLocation()">📍 Tap to Locate & Sync</button>
+    <div id="status">Allow location to find your nearest stop</div>
+  </header>
+
+  <div id="stopsContainer"></div>
+</div>
+
+<!-- Cute Bottom Animated Scene -->
+<div class="sky-scene">
+  <div class="bird bird-1">🐦</div>
+  <div class="bird bird-2">🐥</div>
+  <div class="bus-wrapper">
+    <span class="cute-bus">🚌</span>
+  </div>
+  <div class="road"></div>
+</div>
+
+<script>
+  // SNU Shuttle Database (Timetable times from Time.txt)
+  const SNU_STOPS = [
+    {
+      id: "dorm",
+      name: "기숙사 (Dorm)",
+      lat: 37.4645,
+      lng: 126.9585,
+      schedule: [
+        "10:17", "10:37", "10:57", "11:17", "11:37", "11:57",
+        "12:17", "12:37", "12:57", "13:17", "13:57", "14:57",
+        "15:37", "15:57", "16:17", "16:37", "16:57", "17:17", "17:37"
+      ]
+    },
+    {
+      id: "jayondae",
+      name: "자연대 (Jayondae / College of Natural Sciences)",
+      lat: 37.4587,
+      lng: 126.9535,
+      schedule: [
+        "09:54", "10:14", "10:34", "10:54", "11:14", "11:34",
+        "11:54", "12:14", "12:34", "12:54", "13:34", "14:34",
+        "15:14", "15:34", "15:54", "16:14", "16:34", "16:54", "17:14"
+      ]
+    },
+    {
+      id: "eng302",
+      name: "제2공학관 / 302동 (Bldg 302)",
+      lat: 37.4489,
+      lng: 126.9525,
+      schedule: [
+        "09:50", "10:10", "10:30", "10:50", "11:10", "11:30",
+        "11:50", "12:10", "12:30", "12:50", "13:30", "14:30",
+        "15:10", "15:30", "15:50", "16:10", "16:30", "16:50", "17:10"
+      ]
+    }
+  ];
+
+  let cachedUserCoords = null;
+
+  // Haversine Distance Formula (km)
+  function getDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
+
+  // Calculate total seconds remaining until bus departure
+  function getSecondsUntil(timeStr, now) {
+    const [h, m] = timeStr.split(":").map(Number);
+    const target = new Date(now);
+    target.setHours(h, m, 0, 0);
+    return Math.floor((target - now) / 1000);
+  }
+
+  // Format seconds into minutes + seconds text
+  function formatCountdown(totalSecs) {
+    if (totalSecs <= 0 && totalSecs >= -30) return "Arriving now! 🚌";
+    const mins = Math.floor(totalSecs / 60);
+    const secs = totalSecs % 60;
+    return `in ${mins}m ${secs.toString().padStart(2, '0')}s`;
+  }
+
+  // 1. Fetch Geolocation
+  function getUserLocation() {
+    const status = document.getElementById("status");
+    if (!navigator.geolocation) {
+      status.innerText = "Geolocation not supported.";
+      renderStops();
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        cachedUserCoords = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+        const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        status.innerText = `🔄 Auto-sync active (Updated: ${timeNow})`;
+        renderStops();
+      },
+      (error) => {
+        status.innerText = "Using default stop list (Location not shared)";
+        renderStops();
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  }
+
+  // 2. Render Cards & Update Countdowns
+  function renderStops() {
+    const container = document.getElementById("stopsContainer");
+    container.innerHTML = "";
+    const now = new Date();
+
+    let sortedStops = [...SNU_STOPS];
+    if (cachedUserCoords) {
+      sortedStops = sortedStops.map(stop => ({
+        ...stop,
+        distance: getDistance(cachedUserCoords.lat, cachedUserCoords.lng, stop.lat, stop.lng)
+      })).sort((a, b) => a.distance - b.distance);
+    }
+
+    sortedStops.forEach((stop, index) => {
+      const isNearest = cachedUserCoords && index === 0;
+      
+      // Filter upcoming buses based on seconds
+      const upcoming = stop.schedule
+        .map(time => ({ time, secs: getSecondsUntil(time, now) }))
+        .filter(entry => entry.secs >= -30)
+        .slice(0, 3);
+
+      const distFormatted = stop.distance !== undefined
+        ? (stop.distance < 1 ? `${Math.round(stop.distance * 1000)}m away` : `${stop.distance.toFixed(2)}km away`)
+        : "";
+
+      let scheduleHtml = "";
+      if (upcoming.length === 0) {
+        scheduleHtml = `<div class="bus-time" style="color: var(--text-muted)">No more buses today 🌙</div>`;
+      } else {
+        scheduleHtml = upcoming.map(u => `
+          <div class="bus-time">
+            <span>Departure at <b>${u.time}</b></span>
+            <span class="countdown">${formatCountdown(u.secs)}</span>
+          </div>
+        `).join("");
+      }
+
+      const card = document.createElement("div");
+      card.className = `stop-card ${isNearest ? "nearest" : ""}`;
+      card.innerHTML = `
+        ${isNearest ? '<span class="badge">⭐ NEAREST STOP</span>' : ''}
+        <div class="stop-header">
+          <span class="stop-name">${stop.name}</span>
+          <span class="distance">${distFormatted}</span>
+        </div>
+        <div class="schedule-list">
+          ${scheduleHtml}
+        </div>
+      `;
+      container.appendChild(card);
+    });
+  }
+
+  // Initial load
+  getUserLocation();
+
+  // Feature 2: 1-second interval to update live minute + second countdowns
+  setInterval(renderStops, 1000);
+
+  // Feature 1: 15-second interval to auto-refresh GPS proximity and re-sync
+  setInterval(getUserLocation, 15000);
+</script>
+
+</body>
+</html>
