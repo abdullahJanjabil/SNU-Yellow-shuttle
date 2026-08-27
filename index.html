@@ -254,7 +254,6 @@
 <div class="container">
   <header>
     <h1>✨ SNU Little Shuttle Tracker 🚌</h1>
-    <div class="subtitle">Next departures with lunch & final bus tags ⏱️</div>
     <button onclick="getUserLocation()">📍 Tap to Locate & Sync</button>
     <div id="status">Allow location to find your nearest stop</div>
   </header>
@@ -386,22 +385,22 @@
       
       // Map and find all upcoming buses for today
       const upcomingWithMeta = stop.schedule
-        .map((time, originalIndex) => {
-          const nextTime = originalIndex < totalBuses - 1 ? stop.schedule[originalIndex + 1] : null;
-          const isLunchBreakNext = nextTime && (getMinutesDiff(time, nextTime) >= 35);
+  .map((time, originalIndex) => {
+    const nextTime = originalIndex < totalBuses - 1 ? stop.schedule[originalIndex + 1] : null;
+    const diffMins = nextTime ? getMinutesDiff(time, nextTime) : 0;
+    const isLunchBreakNext = diffMins >= 35;
 
-          return {
-            time,
-            originalIndex,
-            secs: getSecondsUntil(time, now),
-            remainingRank: totalBuses - originalIndex, // 1 = last bus, 2 = 2nd last, 3 = 3rd last
-            isLunchBreakNext,
-            nextPostLunchTime: isLunchBreakNext ? nextTime : null
-          };
-        })
-        .filter(entry => entry.secs >= -30);
-
-      const countRemaining = upcomingWithMeta.length;
+    return {
+      time,
+      originalIndex,
+      secs: getSecondsUntil(time, now),
+      remainingRank: totalBuses - originalIndex, // 1 = last bus, 2 = 2nd last, 3 = 3rd last
+      isLunchBreakNext,
+      gapMinutes: diffMins,
+      nextPostLunchTime: nextTime
+    };
+  })
+  .filter(entry => entry.secs >= -30);
 
       // When the 3rd last bus enters the queue (<= 5 remaining), show all up to 5 buses
       let visibleBuses;
