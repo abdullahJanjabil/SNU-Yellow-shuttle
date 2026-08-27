@@ -49,15 +49,9 @@
     h1 {
       font-family: 'Gaegu', cursive;
       font-size: 2.2rem;
-      margin: 0 0 2px 0;
+      margin: 0 0 8px 0;
       color: var(--primary-dark);
       letter-spacing: 1px;
-    }
-
-    .subtitle {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      margin-bottom: 12px;
     }
 
     button {
@@ -383,26 +377,26 @@
     sortedStops.forEach((stop, index) => {
       const totalBuses = stop.schedule.length;
       
-      // Map and find all upcoming buses for today
       const upcomingWithMeta = stop.schedule
-  .map((time, originalIndex) => {
-    const nextTime = originalIndex < totalBuses - 1 ? stop.schedule[originalIndex + 1] : null;
-    const diffMins = nextTime ? getMinutesDiff(time, nextTime) : 0;
-    const isLunchBreakNext = diffMins >= 35;
+        .map((time, originalIndex) => {
+          const nextTime = originalIndex < totalBuses - 1 ? stop.schedule[originalIndex + 1] : null;
+          const diffMins = nextTime ? getMinutesDiff(time, nextTime) : 0;
+          const isLunchBreakNext = diffMins >= 35;
 
-    return {
-      time,
-      originalIndex,
-      secs: getSecondsUntil(time, now),
-      remainingRank: totalBuses - originalIndex, // 1 = last bus, 2 = 2nd last, 3 = 3rd last
-      isLunchBreakNext,
-      gapMinutes: diffMins,
-      nextPostLunchTime: nextTime
-    };
-  })
-  .filter(entry => entry.secs >= -30);
+          return {
+            time,
+            originalIndex,
+            secs: getSecondsUntil(time, now),
+            remainingRank: totalBuses - originalIndex,
+            isLunchBreakNext,
+            gapMinutes: diffMins,
+            nextPostLunchTime: nextTime
+          };
+        })
+        .filter(entry => entry.secs >= -30);
 
-      // When the 3rd last bus enters the queue (<= 5 remaining), show all up to 5 buses
+      const countRemaining = upcomingWithMeta.length;
+
       let visibleBuses;
       if (countRemaining <= 5) {
         visibleBuses = upcomingWithMeta.slice(0, 5);
@@ -422,7 +416,6 @@
         scheduleHtml = visibleBuses.map(u => {
           let markerHtml = "";
 
-          // Check End of Day Markers
           if (u.remainingRank === 1) {
             markerHtml += `<div class="marker-badge marker-last-1">🔴 Last Bus of the Day</div>`;
           } else if (u.remainingRank === 2) {
@@ -431,9 +424,8 @@
             markerHtml += `<div class="marker-badge marker-last-3">🟡 3rd to Last Bus</div>`;
           }
 
-          // Check Lunch Break Marker
           if (u.isLunchBreakNext) {
-            markerHtml += `<div class="marker-badge marker-lunch">🍱 Last bus before lunch break (Next bus at ${u.nextPostLunchTime})</div>`;
+            markerHtml += `<div class="marker-badge marker-lunch">🍱 Long interval [ next bus in ${u.gapMinutes} minutes ]</div>`;
           }
 
           return `
